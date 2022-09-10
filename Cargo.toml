@@ -17,11 +17,11 @@ rayon = { version = "1.5.1", optional = true }
 [dev-dependencies]
 png = "0.16"
 walkdir = "2.0"
-criterion = "0.3"
+criterion = { version = "0.4", default_features = false }
 wasm-bindgen-test = "0.3"
 
 [features]
-default = ["rayon"]
+# default = ["rayon"]
 platform_independent = []
 # Opt-in, this depends on Rust nightly. Will be changed to a no-op feature when
 # the Rust feature is stabilized which is expected to be 1.61.
