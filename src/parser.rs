@@ -295,6 +295,10 @@ fn update_component_sizes(size: Dimensions, components: &mut [Component]) -> Res
         height: ceil_div(size.height as u32, v_max * 8)?,
     };
 
+    if (mcu_size.width as usize * h_max as usize * 8).checked_mul(mcu_size.height as usize * v_max as usize * 8).is_none() {
+        return Err(Error::Unsupported(UnsupportedFeature::OversizedImage));
+    }
+
     for component in components {
         component.size.width = ceil_div(size.width as u32 * component.horizontal_sampling_factor as u32 * component.dct_scale as u32, h_max * 8)?;
         component.size.height = ceil_div(size.height as u32 * component.vertical_sampling_factor as u32 * component.dct_scale as u32, v_max * 8)?;

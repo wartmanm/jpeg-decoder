@@ -31,6 +31,8 @@ pub enum UnsupportedFeature {
     NonIntegerSubsamplingRatio,
     /// Colour transform
     ColorTransform(ColorTransform),
+    /// Total image area is greater than usize::max_value().
+    OversizedImage,
 }
 
 /// Errors that can occur while decoding a JPEG image.
