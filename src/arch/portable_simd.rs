@@ -262,61 +262,43 @@ pub unsafe fn color_convert_line_ycbcr(y: &[u8], cb: &[u8], cr: &[u8], output: &
 
         // Shuffle rrrrrrrrggggggggbbbbbbbb to rgbrgbrgb...
 
-        let rg_lanes = simd_swizzle!(r, g, [First(0), Second(0), First(0),
-                                            First(1), Second(1), First(0),
-                                            First(2), Second(2), First(0),
-                                            First(3), Second(3), First(0),
-                                            First(4), Second(4), First(0),
-                                            First(5)]);
-        let b_lanes = simd_swizzle!(b, [0, 0, 0,
-                                        0, 0, 1,
-                                        0, 0, 2,
-                                        0, 0, 3,
-                                        0, 0, 4,
-                                        0]);
-        let rb_xor = simd_swizzle!(r, b, [Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0)]);
-        let rgb_low: u8x16 = rg_lanes ^ b_lanes ^ rb_xor;
-
-        //let gb_lanes = simd_swizzle!(g, b, [First(5), Second(5), First(0),
-        //                                    First(6), Second(6), First(0),
-        //                                    First(7), Second(7), First(0),
-        //                                    First(8), Second(8), First(0),
-        //                                    First(9), Second(9), First(0),
-        //                                    First(10)]);
-        //let r_lanes = simd_swizzle!(r, r, [First(0), First(0), First(6),
-        //                                   First(0), First(0), First(7),
-        //                                   First(0), First(0), First(8),
-        //                                   First(0), First(0), First(9),
-        //                                   First(0), First(0), First(10),
-        //                                   First(0)]);
-        let gb_lanes = simd_swizzle!(g, b, [First(5), Second(5), First(0),
-                                            First(6), Second(6), First(0),
-                                            First(7), Second(7), First(0),
-                                            First(0), Second(0), First(0),
-                                            First(0), Second(0), First(0),
-                                            First(0)]);
-        let r_lanes = simd_swizzle!(r, r, [First(0), First(0), First(6),
-                                           First(0), First(0), First(7),
-                                           First(0), First(0), First(0),
-                                           First(0), First(0), First(0),
-                                           First(0), First(0), First(0),
-                                           First(0)]);
-        let gr_xor = simd_swizzle!(g, r, [Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0), Second(0), First(0),
-                                          Second(0)]);
-        let rgb_hi: u8x16 = gb_lanes ^ r_lanes ^ gr_xor;
+        let rg_lanes: u8x32 = simd_swizzle!(r, g, [First(0), Second(0), First(0),
+                                                   First(1), Second(1), First(0),
+                                                   First(2), Second(2), First(0),
+                                                   First(3), Second(3), First(0),
+                                                   First(4), Second(4), First(0),
+                                                   First(5), Second(5), First(0),
+                                                   First(6), Second(6), First(0),
+                                                   First(7), Second(7), First(0),
+                                                   First(0), Second(0), First(0),
+                                                   First(0), Second(0), First(0),
+                                                   First(0), Second(0)]);
+        let b_lanes: u8x32 = simd_swizzle!(b, [0, 0, 0,
+                                               0, 0, 1,
+                                               0, 0, 2,
+                                               0, 0, 3,
+                                               0, 0, 4,
+                                               0, 0, 5,
+                                               0, 0, 6,
+                                               0, 0, 7,
+                                               0, 0, 0,
+                                               0, 0, 0,
+                                               0, 0]);
+        let rb_xor: u8x32 = simd_swizzle!(r, b, [Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0), First(0),
+                                                 Second(0), Second(0)]);
+        let rgb: u8x32 = rg_lanes ^ b_lanes ^ rb_xor;
 
         let mut data = [0u8; 32];
-        std::ptr::write::<u8x16>(data.as_mut_ptr() as *mut _, rgb_low);
-        std::ptr::write::<u8x16>(data.as_mut_ptr().wrapping_add(16) as *mut _, rgb_hi);
+        std::ptr::write::<u8x32>(data.as_mut_ptr() as *mut _, rgb);
         std::ptr::copy_nonoverlapping::<u8>(
             data.as_ptr(),
             output.as_mut_ptr().wrapping_add(24 * i),
