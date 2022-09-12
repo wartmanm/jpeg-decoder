@@ -30,6 +30,8 @@
 #![deny(unsafe_code)]
 #![cfg_attr(feature = "platform_independent", forbid(unsafe_code))]
 
+#![feature(portable_simd)]
+
 extern crate alloc;
 extern crate core;
 
