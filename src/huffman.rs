@@ -120,13 +120,20 @@ impl HuffmanDecoder {
         self.num_bits -= count;
     }
 
+    #[inline]
+    fn fill_with_zeros(&mut self) {
+        self.bits &= !((!0) >> self.num_bits);
+        self.num_bits = 64;
+    }
+
     fn read_bits<R: Read>(&mut self, reader: &mut R) -> Result<()> {
+        if self.marker.is_some() {
+            self.fill_with_zeros();
+            return Ok(());
+        }
         while self.num_bits <= 56 {
             // Fill with zero bits if we have reached the end.
-            let byte = match self.marker {
-                Some(_) => 0,
-                None => read_u8(reader)?,
-            };
+            let byte = read_u8(reader)?;
 
             if byte == 0xFF {
                 let mut next_byte = read_u8(reader)?;
@@ -148,7 +155,8 @@ impl HuffmanDecoder {
                         _    => self.marker = Some(Marker::from_u8(next_byte).unwrap()),
                     }
 
-                    continue;
+                    self.fill_with_zeros();
+                    return Ok(());
                 }
             }
 

@@ -38,9 +38,9 @@ pub fn get_dequantize_and_idct_block_8x8(
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     #[allow(unsafe_code)]
     {
-        //if is_x86_feature_detected!("ssse3") {
-        //    return Some(ssse3::dequantize_and_idct_block_8x8);
-        //}
+        if is_x86_feature_detected!("ssse3") {
+            return Some(ssse3::dequantize_and_idct_block_8x8);
+        }
     }
     // Runtime detection is not needed on aarch64.
     #[cfg(all(feature = "nightly_aarch64_neon", target_arch = "aarch64"))]
