@@ -109,7 +109,7 @@ impl HuffmanDecoder {
         debug_assert!(count <= 16);
         debug_assert!(self.num_bits >= count);
 
-        ((self.bits >> (64 - count)) & ((1 << count) - 1)) as u16
+        (self.bits >> (64 - count)) as u16
     }
 
     #[inline]
@@ -127,12 +127,12 @@ impl HuffmanDecoder {
     }
 
     fn read_bits<R: Read>(&mut self, reader: &mut R) -> Result<()> {
+        // Fill with zero bits if we have reached the end.
         if self.marker.is_some() {
             self.fill_with_zeros();
             return Ok(());
         }
         while self.num_bits <= 56 {
-            // Fill with zero bits if we have reached the end.
             let byte = read_u8(reader)?;
 
             if byte == 0xFF {
